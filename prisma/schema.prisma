@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int       @id @default(autoincrement())
+  fullname         String
+  phone            String    @unique
+  password         String
+  plan             String
+  referralId       String    @unique
+  planStartDate    DateTime? @default(now())
+  registrationPaid Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  notifications    String[]  @default([])
+  lastActivity     String?
+
+  accounts           Account[]
+  complaints         Complaint[]
+  settlementAccounts SettlementAccount[]
+  Payment            Payment[]
+}
+
+model Account {
+  id                 Int      @id @default(autoincrement())
+  accountNumber      String   @unique
+  balance            Int      @default(0)
+  totalContributions Int      @default(0)
+  rewards            Int      @default(0)
+  totalDebt          Int      @default(0)
+  referralEarnings   Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  userId       Int
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  referrals    Referral[]
+
+  @@index([userId])
+}
+
+model Transaction {
+  id                           Int      @id @default(autoincrement())
+  reference                    String   @unique
+  amount                       Int
+  type                         String // topup, withdrawal, contribution, reward, etc.
+  status                       String   @default("pending") // pending, successful, failed
+  paymentMethod                String? // wema, alatpay, bank_transfer, etc.
+  description                  String?
+  platformTransactionReference String?
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
+
+  accountId Int
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Referral {
+  id             Int       @id @default(autoincrement())
+  referralCode   String
+  referredUserId Int?
+  referredName   String?
+  referredPhone  String?
+  status         String    @default("pending") // pending, active, rewarded
+  rewardAmount   Int       @default(0)
+  rewardedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  accountId Int
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([referralCode])
+}
+
+model Complaint {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String    @db.Text
+  category    String // account, transaction, service, other
+  status      String    @default("open") // open, in_progress, resolved, closed
+  priority    String    @default("normal") // low, normal, high, urgent
+  resolution  String?   @db.Text
+  resolvedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model SettlementAccount {
+  id            Int      @id @default(autoincrement())
+  bankName      String
+  accountNumber String
+  accountName   String
+  isDefault     Boolean  @default(false)
+  isVerified    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+model Payment {
+  id                Int           @id @default(autoincrement())
+  userId            Int
+  businessId        String       
+  amount            Int
+  currency          String
+  orderId           String        @unique
+  description       String
+  customerEmail     String
+  customerPhone     String
+  customerFirstName String
+  customerLastName  String
+  customerMetadata  String?
+  status            PaymentStatus @default(PENDING) // pending, successful, failed
+  User              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime      @default(now())
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESSFUL
+  FAILED
+}
