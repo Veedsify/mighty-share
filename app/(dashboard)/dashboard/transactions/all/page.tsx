@@ -26,7 +26,7 @@ export default function AllTransactionsPage() {
     const fetchTransactions = async () => {
       try {
         const res = await fetch(
-          `/api/transactions?accountId=${activeAccount.accountId}`
+          `/api/transactions?accountId=${activeAccount.accountNumber}`
         );
         const data = await res.json();
 

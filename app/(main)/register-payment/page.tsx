@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import { CardSim, LucideCreditCard, LucideLoader } from "lucide-react";
@@ -258,94 +258,96 @@ export default function RegisterPaymentPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="bg-white p-8 rounded-2xl w-full max-w-lg border border-gray-200">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-indigo-100 rounded-full mb-6">
-            <svg
-              className="w-10 h-10 text-indigo-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-              />
-            </svg>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="bg-white p-8 rounded-2xl w-full max-w-lg border border-gray-200">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-indigo-100 rounded-full mb-6">
+              <svg
+                className="w-10 h-10 text-indigo-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                />
+              </svg>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-3">
+              Complete Registration
+            </h1>
+            <p className="text-gray-600 text-base leading-relaxed">
+              A one-time registration fee of{" "}
+              <span className="font-semibold text-indigo-600">
+                ₦ {Number(fee).toLocaleString()}
+              </span>{" "}
+              is required to activate your MightyShare account.
+            </p>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">
-            Complete Registration
-          </h1>
-          <p className="text-gray-600 text-base leading-relaxed">
-            A one-time registration fee of{" "}
-            <span className="font-semibold text-indigo-600">
-              ₦ {Number(fee).toLocaleString()}
-            </span>{" "}
-            is required to activate your MightyShare account.
-          </p>
+
+          {/* Verification State */}
+          {isVerifying ? (
+            <div className="text-center py-10">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200 border-t-indigo-600 mx-auto mb-6"></div>
+              <p className="text-gray-700 font-medium text-lg">
+                {message.text}
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Payment Buttons */}
+              <div className="space-y-4 mb-6">
+                <button
+                  onClick={() => initializePayment("alatpay")}
+                  disabled={isAnyActionInProgress}
+                  className="w-full bg-pink-700 hover:bg-pink-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-4 px-6 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform"
+                >
+                  {loadingProvider === "alatpay" ? (
+                    <>
+                      <LucideLoader className="animate-spin" size={20} />
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <LucideCreditCard />
+                      <span>Pay with ALATPay</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Message Display */}
+              {message.text && (
+                <div className={getMessageClassName()}>{message.text}</div>
+              )}
+
+              {/* Skip Option */}
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <button
+                  onClick={() => router.push("/dashboard")}
+                  disabled={isAnyActionInProgress}
+                  className="w-full text-sm text-gray-500 hover:text-gray-700 disabled:text-gray-300 disabled:cursor-not-allowed font-medium transition-colors py-3"
+                >
+                  Skip payment and continue to Dashboard →
+                </button>
+              </div>
+            </>
+          )}
         </div>
-
-        {/* Verification State */}
-        {isVerifying ? (
-          <div className="text-center py-10">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200 border-t-indigo-600 mx-auto mb-6"></div>
-            <p className="text-gray-700 font-medium text-lg">{message.text}</p>
-          </div>
-        ) : (
-          <>
-            {/* Payment Buttons */}
-            <div className="space-y-4 mb-6">
-              <button
-                onClick={() => initializePayment("alatpay")}
-                disabled={isAnyActionInProgress}
-                className="w-full bg-pink-700 hover:bg-pink-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-4 px-6 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform"
-              >
-                {loadingProvider === "alatpay" ? (
-                  <>
-                    <LucideLoader className="animate-spin" size={20} />
-                    <span>Processing...</span>
-                  </>
-                ) : (
-                  <>
-                    <LucideCreditCard />
-                    <span>Pay with ALATPay</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Message Display */}
-            {message.text && (
-              <div className={getMessageClassName()}>{message.text}</div>
-            )}
-
-            {/* Skip Option */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <button
-                onClick={() => router.push("/dashboard")}
-                disabled={isAnyActionInProgress}
-                className="w-full text-sm text-gray-500 hover:text-gray-700 disabled:text-gray-300 disabled:cursor-not-allowed font-medium transition-colors py-3"
-              >
-                Skip payment and continue to Dashboard →
-              </button>
-            </div>
-          </>
+        {bankAccountModalOpen && bankdata && (
+          <BankModal
+            accountNumber={bankdata.virtualBankAccountNumber}
+            bankName={"Wema Bank PLC"}
+            orderId={bankdata.orderId}
+            transactionId={bankdata.transactionId}
+            isOpen={bankAccountModalOpen}
+            onClose={handleOnClose}
+          />
         )}
       </div>
-      {bankAccountModalOpen && bankdata && (
-        <BankModal
-          accountNumber={bankdata.virtualBankAccountNumber}
-          bankName={"Wema Bank PLC"}
-          orderId={bankdata.orderId}  
-          transactionId={bankdata.transactionId}
-          isOpen={bankAccountModalOpen}
-          onClose={handleOnClose}
-        />
-      )}
-    </div>
   );
 }

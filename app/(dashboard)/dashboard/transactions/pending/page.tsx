@@ -26,7 +26,7 @@ export default function PendingTransactionsPage() {
     const fetchTransactions = async () => {
       try {
         const res = await fetch(
-          `/api/transactions?accountId=${activeAccount.accountId}&status=pending`
+          `/api/transactions?accountId=${activeAccount.accountNumber}&status=pending`
         );
         const data = await res.json();
 

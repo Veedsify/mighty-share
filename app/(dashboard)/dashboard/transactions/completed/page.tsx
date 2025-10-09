@@ -26,7 +26,7 @@ export default function CompletedTransactionsPage() {
     const fetchTransactions = async () => {
       try {
         const res = await fetch(
-          `/api/transactions?accountId=${activeAccount.accountId}&status=successful`
+          `/api/transactions?accountId=${activeAccount.accountNumber}&status=successful`
         );
         const data = await res.json();
 

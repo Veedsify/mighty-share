@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
-
+import { cookies } from "next/headers";
+export const dynamic = "force-dynamic";
 const prisma = new PrismaClient();
 
 export async function GET(req: NextRequest) {
   try {
     // ✅ Read cookie directly
-    let token = req.cookies.get("token")?.value;
+    let token = cookies().get("token")?.value;
 
     // Validate the token and proceed with your logic
     if (!token) {

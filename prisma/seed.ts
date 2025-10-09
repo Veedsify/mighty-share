@@ -41,6 +41,134 @@ async function main() {
 
   console.log("✅ Seed user and accounts created");
 
+  // Get the created accounts
+  const accounts = await prisma.account.findMany({
+    where: { userId: user.id },
+  });
+
+  // Seed Transactions for each account
+  if (accounts.length > 0) {
+    const transactionsData = [];
+
+    // Transactions for first account (MS123456)
+    transactionsData.push(
+      {
+        accountId: accounts[0].id,
+        reference: "TXN-20251001-001",
+        amount: 20000,
+        type: "topup",
+        status: "successful",
+        paymentMethod: "wema",
+        description: "Account top-up via Wema Bank",
+        platformTransactionReference: "WEMA-20251001-12345",
+      },
+      {
+        accountId: accounts[0].id,
+        reference: "TXN-20251003-002",
+        amount: 15000,
+        type: "contribution",
+        status: "successful",
+        description: "Monthly contribution",
+      },
+      {
+        accountId: accounts[0].id,
+        reference: "TXN-20251005-003",
+        amount: 5000,
+        type: "reward",
+        status: "successful",
+        description: "Referral reward",
+      },
+      {
+        accountId: accounts[0].id,
+        reference: "TXN-20251008-004",
+        amount: 10000,
+        type: "topup",
+        status: "pending",
+        paymentMethod: "alatpay",
+        description: "Account top-up via AlatPay",
+      }
+    );
+
+    // Transactions for second account (MS789012)
+    if (accounts.length > 1) {
+      transactionsData.push(
+        {
+          accountId: accounts[1].id,
+          reference: "TXN-20250928-005",
+          amount: 30000,
+          type: "topup",
+          status: "successful",
+          paymentMethod: "bank_transfer",
+          description: "Bank transfer top-up",
+        },
+        {
+          accountId: accounts[1].id,
+          reference: "TXN-20251002-006",
+          amount: 25000,
+          type: "contribution",
+          status: "successful",
+          description: "Bi-weekly contribution",
+        },
+        {
+          accountId: accounts[1].id,
+          reference: "TXN-20251006-007",
+          amount: 5000,
+          type: "withdrawal",
+          status: "failed",
+          description: "Withdrawal request - insufficient balance",
+        }
+      );
+    }
+
+    // Transactions for third account (MS345678)
+    if (accounts.length > 2) {
+      transactionsData.push(
+        {
+          accountId: accounts[2].id,
+          reference: "TXN-20250925-008",
+          amount: 50000,
+          type: "topup",
+          status: "successful",
+          paymentMethod: "wema",
+          description: "Large account top-up",
+          platformTransactionReference: "WEMA-20250925-67890",
+        },
+        {
+          accountId: accounts[2].id,
+          reference: "TXN-20250930-009",
+          amount: 40000,
+          type: "contribution",
+          status: "successful",
+          description: "Monthly contribution",
+        },
+        {
+          accountId: accounts[2].id,
+          reference: "TXN-20251004-010",
+          amount: 10000,
+          type: "reward",
+          status: "successful",
+          description: "Bonus reward",
+        },
+        {
+          accountId: accounts[2].id,
+          reference: "TXN-20251007-011",
+          amount: 20000,
+          type: "topup",
+          status: "successful",
+          paymentMethod: "alatpay",
+          description: "Account top-up via AlatPay",
+          platformTransactionReference: "ALAT-20251007-11111",
+        }
+      );
+    }
+
+    await prisma.transaction.createMany({
+      data: transactionsData,
+    });
+
+    console.log("✅ Seed transactions created");
+  }
+
   // Seed Settlement Clearance accounts
   await prisma.settlementClearance.createMany({
     data: [
