@@ -1,44 +1,32 @@
-# Use a specific version of Bun (e.g., bun:latest)
-FROM oven/bun:1
+# Use Node.js 22 Alpine for smaller image size
+FROM node:22-alpine
 
-ARG NEXT_PUBLIC_APP_URL
-ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+# Install Prisma system dependencies
+RUN apk add --no-cache libc6-compat
 
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Install system dependencies for native module compilation
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    build-essential \
-    make \
-    g++ \
-    && rm -rf /var/lib/apt/lists/*
+# Copy package files first for better layer caching
+COPY package*.json ./
 
-# Set Python environment variable for node-gyp
-ENV PYTHON=/usr/bin/python3
+# Install production dependencies only
+RUN npm ci --only=production
 
-# Copy package.json and bun.lockb separately to leverage Docker cache
-COPY package.json bun.lockb* ./
-
-# Install dependencies with Bun (equivalent to npm install)
-RUN bun install
-
-# Generate Prisma client
-RUN bunx prisma generate
-
-# Copy the rest of the application code
+# Copy application code
 COPY . .
 
-# Build the application (if needed, Bun has a different build command)
-RUN bun run build
+# Generate Prisma Client (essential for runtime)
+RUN npx prisma generate
 
-# Expose the application port
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001 && \
+    chown -R nextjs:nodejs /app
+USER nextjs
+
+# Expose default Next.js port
 EXPOSE 3000
 
-# Set default environment variable
-ENV NODE_ENV=production
-
-# Start the application with Bun (equivalent to npm start)
-CMD ["bun", "start"]
+# Start the application
+CMD ["npm", "start"]
