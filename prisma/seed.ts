@@ -173,6 +173,8 @@ async function main() {
   await prisma.settlementClearance.createMany({
     data: [
       {
+        userId: user.id,
+        accountId: accounts[0].id,
         accountNumber: "MS123456",
         accountName: "Settlement Account 1",
         amount: 50000,
@@ -183,6 +185,8 @@ async function main() {
         notes: "High priority clearance needed",
       },
       {
+        userId: user.id,
+        accountId: accounts[1].id,
         accountNumber: "MS789012",
         accountName: "Settlement Account 2",
         amount: 75000,
@@ -192,6 +196,8 @@ async function main() {
         priority: "normal",
       },
       {
+        userId: user.id,
+        accountId: accounts[2].id,
         accountNumber: "MS345678",
         accountName: "Settlement Account 3",
         amount: 120000,
@@ -209,6 +215,8 @@ async function main() {
   await prisma.paidSettlementAccount.createMany({
     data: [
       {
+        userId: user.id,
+        accountId: accounts[0].id,
         accountNumber: "MS123456",
         accountName: "Settlement Account 1",
         bankName: "MightyShare Account",
@@ -218,6 +226,8 @@ async function main() {
         paymentMethod: "Bank Transfer",
       },
       {
+        userId: user.id,
+        accountId: accounts[1].id,
         accountNumber: "MS789012",
         accountName: "Settlement Account 2",
         bankName: "MightyShare Account",
@@ -227,6 +237,8 @@ async function main() {
         paymentMethod: "Bank Transfer",
       },
       {
+        userId: user.id,
+        accountId: accounts[2].id,
         accountNumber: "MS345678",
         accountName: "Settlement Account 3",
         bankName: "MightyShare Account",
@@ -244,6 +256,8 @@ async function main() {
   await prisma.nextSettlementAccount.createMany({
     data: [
       {
+        userId: user.id,
+        accountId: accounts[0].id,
         accountNumber: "MS123456",
         accountName: "Settlement Account 1",
         bankName: "MightyShare Account",
@@ -254,6 +268,8 @@ async function main() {
         status: "scheduled",
       },
       {
+        userId: user.id,
+        accountId: accounts[1].id,
         accountNumber: "MS789012",
         accountName: "Settlement Account 2",
         bankName: "MightyShare Account",
@@ -264,6 +280,8 @@ async function main() {
         status: "scheduled",
       },
       {
+        userId: user.id,
+        accountId: accounts[2].id,
         accountNumber: "MS345678",
         accountName: "Settlement Account 3",
         bankName: "MightyShare Account",

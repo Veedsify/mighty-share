@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle, Clock } from "lucide-react";
+import axios from "axios";
 
 interface ClearanceAccount {
   id: number;
@@ -23,8 +24,9 @@ export default function DueClearancePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/settlements/due-clearance");
-        const data = await response.json();
+        const { data } = await axios.get("/api/settlements/due-clearance", {
+          withCredentials: true,
+        });
 
         if (data.clearanceAccounts) {
           setAccounts(data.clearanceAccounts);

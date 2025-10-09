@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Download, Search } from "lucide-react";
+import axios from "axios";
 
 interface PaidAccount {
   id: number;
@@ -20,8 +21,9 @@ export default function PaidAccountsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/settlements/paid-accounts");
-        const data = await response.json();
+        const { data } = await axios.get("/api/settlements/paid-accounts", {
+          withCredentials: true,
+        });
 
         if (data.paidAccounts) {
           setAccounts(data.paidAccounts);

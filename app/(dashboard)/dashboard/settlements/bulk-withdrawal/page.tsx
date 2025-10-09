@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Trash2, AlertCircle } from "lucide-react";
+import axios from "axios";
 
 interface Account {
   id: number;
@@ -28,8 +29,9 @@ export default function BulkWithdrawalPage() {
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
-        const response = await fetch("/api/accounts");
-        const data = await response.json();
+        const { data } = await axios.get("/api/accounts", {
+          withCredentials: true,
+        });
 
         if (data.accounts) {
           setAvailableAccounts(data.accounts);
@@ -44,11 +46,11 @@ export default function BulkWithdrawalPage() {
     fetchAccounts();
   }, []);
 
-const filteredAvailableAccounts = availableAccounts.filter(
-      (account) =>
-            !selectedAccounts.find((selected) => selected.id === account.id) &&
-            account.accountNumber.toLowerCase().includes(searchQuery.toLowerCase())
-);
+  const filteredAvailableAccounts = availableAccounts.filter(
+    (account) =>
+      !selectedAccounts.find((selected) => selected.id === account.id) &&
+      account.accountNumber.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleAddAccount = (account: Account) => {
     setSelectedAccounts([...selectedAccounts, account]);

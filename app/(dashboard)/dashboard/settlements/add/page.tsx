@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import { useDashboard } from "../../../../../components/DashboardProvider";
 
 export default function AddSettlementAccountPage() {
@@ -35,18 +36,13 @@ export default function AddSettlementAccountPage() {
     setSubmitting(true);
 
     try {
-      const res = await fetch("/api/settlement-accounts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: (user as any)?.id,
-          ...formData,
-        }),
+      const { data } = await axios.post("/api/settlement-accounts", formData, {
+        withCredentials: true,
       });
 
-      const data = await res.json();
-
-      if (data.ok) {
+      if (data.error) {
+        setError(data.error || "Failed to add settlement account");
+      } else {
         setSuccess(true);
         setFormData({
           bankName: "",
@@ -55,11 +51,13 @@ export default function AddSettlementAccountPage() {
           isDefault: false,
         });
         setTimeout(() => router.push("/dashboard/settlements/manage"), 2000);
-      } else {
-        setError(data.error || "Failed to add settlement account");
       }
     } catch (err: any) {
-      setError(err.message || "Failed to add settlement account");
+      setError(
+        err.response?.data?.error ||
+          err.message ||
+          "Failed to add settlement account"
+      );
     } finally {
       setSubmitting(false);
     }

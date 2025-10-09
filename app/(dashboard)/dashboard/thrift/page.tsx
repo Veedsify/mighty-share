@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CheckCircle, Clock, LucideLoader, TrendingUp } from "lucide-react";
+import axios from "axios";
 
 interface ThriftPackage {
   id: number;
@@ -22,8 +23,9 @@ export default function ThriftPage() {
   useEffect(() => {
     const fetchPackages = async () => {
       try {
-        const response = await fetch("/api/thrift/packages");
-        const data = await response.json();
+        const { data } = await axios.get("/api/thrift/packages", {
+          withCredentials: true,
+        });
 
         if (data.packages) {
           setPackages(data.packages);

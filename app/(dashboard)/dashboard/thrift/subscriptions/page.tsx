@@ -9,6 +9,7 @@ import {
   Clock,
   LucideLoader,
 } from "lucide-react";
+import axios from "axios";
 
 interface Subscription {
   id: number;
@@ -31,8 +32,9 @@ export default function ThriftSubscriptionsPage() {
   useEffect(() => {
     const fetchSubscriptions = async () => {
       try {
-        const response = await fetch("/api/thrift/subscriptions");
-        const data = await response.json();
+        const { data } = await axios.get("/api/thrift/subscriptions", {
+          withCredentials: true,
+        });
 
         if (data.subscriptions) {
           setSubscriptions(data.subscriptions);

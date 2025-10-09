@@ -1,11 +1,48 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
 import prisma from "@/lib/prisma";
+export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
+    // Extract token from cookie or Authorization header
+    let token = cookies().get("token")?.value;
+
+    if (!token) {
+      const authorizationHeader = req.headers.get("Authorization");
+      if (authorizationHeader && authorizationHeader.startsWith("Bearer ")) {
+        token = authorizationHeader.split(" ")[1];
+      }
+    }
+
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Verify token and get userId
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      userId: number;
+    };
+
+    // Verify user exists and get their accounts
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: { accounts: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Fetch next settlement accounts for the authenticated user
     const nextSettlementAccounts = await prisma.nextSettlementAccount.findMany({
       where: {
+        userId: decoded.userId,
         status: "scheduled",
+      },
+      include: {
+        account: true,
       },
       orderBy: {
         scheduledDate: "asc",
@@ -22,11 +59,40 @@ export async function GET(req: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
+    // Extract token from cookie or Authorization header
+    let token = cookies().get("token")?.value;
+
+    if (!token) {
+      const authorizationHeader = req.headers.get("Authorization");
+      if (authorizationHeader && authorizationHeader.startsWith("Bearer ")) {
+        token = authorizationHeader.split(" ")[1];
+      }
+    }
+
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Verify token and get userId
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      userId: number;
+    };
+
+    // Verify user exists and get their accounts
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: { accounts: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const body = await req.json();
     const {
-      userId,
+      accountId,
       accountNumber,
       accountName,
       bankName,
@@ -37,12 +103,29 @@ export async function POST(request: Request) {
       notes,
     } = body;
 
-    if (!userId) {
-      return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+    if (!accountId) {
+      return NextResponse.json(
+        { error: "Account ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Verify the account belongs to the user
+    const accountBelongsToUser = user.accounts.some(
+      (acc) => acc.id === accountId
+    );
+
+    if (!accountBelongsToUser) {
+      return NextResponse.json(
+        { error: "Account does not belong to user" },
+        { status: 403 }
+      );
     }
 
     const nextSettlementAccount = await prisma.nextSettlementAccount.create({
       data: {
+        userId: decoded.userId,
+        accountId,
         accountNumber,
         accountName,
         bankName,
@@ -52,6 +135,9 @@ export async function POST(request: Request) {
         priority: priority || "normal",
         status: "scheduled",
         notes,
+      },
+      include: {
+        account: true,
       },
     });
 

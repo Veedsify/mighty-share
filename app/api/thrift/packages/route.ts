@@ -1,8 +1,39 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
 import prisma from "@/lib/prisma";
+export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    // Extract token from cookie or Authorization header
+    let token = cookies().get("token")?.value;
+
+    if (!token) {
+      const authorizationHeader = req.headers.get("Authorization");
+      if (authorizationHeader && authorizationHeader.startsWith("Bearer ")) {
+        token = authorizationHeader.split(" ")[1];
+      }
+    }
+
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      userId: number;
+    };
+
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     const packages = await prisma.thriftPackage.findMany({
       where: {
         isActive: true,
@@ -22,9 +53,37 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
+    // Extract token from cookie or Authorization header
+    let token = cookies().get("token")?.value;
+
+    if (!token) {
+      const authorizationHeader = req.headers.get("Authorization");
+      if (authorizationHeader && authorizationHeader.startsWith("Bearer ")) {
+        token = authorizationHeader.split(" ")[1];
+      }
+    }
+
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      userId: number;
+    };
+
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const body = await req.json();
     const {
       name,
       price,

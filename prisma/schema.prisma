@@ -21,11 +21,15 @@ model User {
   notifications    String[]  @default([])
   lastActivity     String?
 
-  accounts            Account[]
-  complaints          Complaint[]
-  settlementAccounts  SettlementAccount[]
-  Payment             Payment[]
-  thriftSubscriptions ThriftSubscription[]
+  accounts               Account[]
+  complaints             Complaint[]
+  settlementAccounts     SettlementAccount[]
+  Payment                Payment[]
+  thriftSubscriptions    ThriftSubscription[]
+  settlementClearances   SettlementClearance[]
+  paidSettlementAccounts PaidSettlementAccount[]
+  bulkWithdrawalRequests BulkWithdrawalRequest[]
+  nextSettlementAccounts NextSettlementAccount[]
 }
 
 model Account {
@@ -39,10 +43,13 @@ model Account {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  userId       Int
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions Transaction[]
-  referrals    Referral[]
+  userId                 Int
+  user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions           Transaction[]
+  referrals              Referral[]
+  settlementClearances   SettlementClearance[]
+  paidSettlementAccounts PaidSettlementAccount[]
+  nextSettlementAccounts NextSettlementAccount[]
 
   @@index([userId])
 }
@@ -167,6 +174,13 @@ model SettlementClearance {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId Int
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([accountId])
   @@index([status])
   @@index([dueDate])
 }
@@ -183,6 +197,13 @@ model PaidSettlementAccount {
   notes          String?  @db.Text
   createdAt      DateTime @default(now())
 
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId Int
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([accountId])
   @@index([settlementDate])
   @@index([reference])
 }
@@ -203,6 +224,10 @@ model BulkWithdrawalRequest {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
   @@index([status])
   @@index([createdAt])
 }
@@ -221,6 +246,13 @@ model NextSettlementAccount {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId Int
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([accountId])
   @@index([scheduledDate])
   @@index([status])
 }

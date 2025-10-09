@@ -1,48 +1,43 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
 import prisma from "@/lib/prisma";
+export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const userId = parseInt(searchParams.get("userId") || "0", 10);
+    // Extract token from cookie or Authorization header
+    let token = cookies().get("token")?.value;
 
-    if (!userId) {
-      // For demo, fetch all subscriptions
-      const subscriptions = await prisma.thriftSubscription.findMany({
-        include: {
-          package: true,
-          user: {
-            select: {
-              id: true,
-              fullname: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
-
-      // Transform data to match frontend interface
-      const transformedSubscriptions = subscriptions.map((sub) => ({
-        id: sub.id,
-        packageName: sub.package.name,
-        amountInvested: sub.amountInvested,
-        startDate: sub.startDate.toISOString(),
-        endDate: sub.endDate.toISOString(),
-        status: sub.status,
-        expectedReturn: sub.expectedReturn,
-        actualReturn: sub.actualReturn,
-        duration: sub.package.duration,
-        profitPercentage: sub.package.profitPercentage,
-      }));
-
-      return NextResponse.json({ subscriptions: transformedSubscriptions });
+    if (!token) {
+      const authorizationHeader = req.headers.get("Authorization");
+      if (authorizationHeader && authorizationHeader.startsWith("Bearer ")) {
+        token = authorizationHeader.split(" ")[1];
+      }
     }
 
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Verify token and get userId
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      userId: number;
+    };
+
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Fetch subscriptions for the authenticated user
     const subscriptions = await prisma.thriftSubscription.findMany({
       where: {
-        userId,
+        userId: decoded.userId,
       },
       include: {
         package: true,
@@ -76,12 +71,40 @@ export async function GET(req: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
-    const { userId, packageId, amountInvested } = body;
+    // Extract token from cookie or Authorization header
+    let token = cookies().get("token")?.value;
 
-    if (!userId || !packageId || !amountInvested) {
+    if (!token) {
+      const authorizationHeader = req.headers.get("Authorization");
+      if (authorizationHeader && authorizationHeader.startsWith("Bearer ")) {
+        token = authorizationHeader.split(" ")[1];
+      }
+    }
+
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Verify token and get userId
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      userId: number;
+    };
+
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const body = await req.json();
+    const { packageId, amountInvested } = body;
+
+    if (!packageId || !amountInvested) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -107,7 +130,7 @@ export async function POST(request: Request) {
 
     const subscription = await prisma.thriftSubscription.create({
       data: {
-        userId,
+        userId: decoded.userId,
         packageId,
         amountInvested,
         startDate,

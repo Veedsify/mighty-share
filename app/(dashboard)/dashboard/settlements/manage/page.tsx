@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import { useDashboard } from "../../../../../components/DashboardProvider";
 
 interface SettlementAccount {
@@ -22,29 +23,28 @@ export default function ManageSettlementAccountsPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!(user as any)?.id) return;
-
     const fetchAccounts = async () => {
       try {
-        const res = await fetch(
-          `/api/settlement-accounts?userId=${(user as any).id}`
-        );
-        const data = await res.json();
+        const { data } = await axios.get(`/api/settlement-accounts`, {
+          withCredentials: true,
+        });
 
-        if (data.ok) {
-          setAccounts(data.accounts || []);
-        } else {
+        if (data.error) {
           setError(data.error || "Failed to load accounts");
+        } else {
+          setAccounts(data.accounts || []);
         }
       } catch (err: any) {
-        setError(err.message || "Failed to load accounts");
+        setError(
+          err.response?.data?.error || err.message || "Failed to load accounts"
+        );
       } finally {
         setLoading(false);
       }
     };
 
     fetchAccounts();
-  }, [user]);
+  }, []);
 
   if (loading) {
     return (

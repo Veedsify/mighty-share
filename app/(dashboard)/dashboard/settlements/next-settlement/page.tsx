@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Calendar, Clock } from "lucide-react";
+import axios from "axios";
 
 interface NextSettlementAccount {
   id: number;
@@ -21,8 +22,9 @@ export default function NextSettlementPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/settlements/next-settlement");
-        const data = await response.json();
+        const { data } = await axios.get("/api/settlements/next-settlement", {
+          withCredentials: true,
+        });
 
         if (data.nextSettlementAccounts) {
           setAccounts(data.nextSettlementAccounts);
