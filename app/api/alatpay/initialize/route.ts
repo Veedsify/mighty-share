@@ -90,7 +90,7 @@ export async function POST(req: Request) {
       "https://apibox.alatpay.ng/bank-transfer/api/v1/bankTransfer/virtualAccount",
       {
         businessId: "27a4ed9c-e6db-490e-1495-08ddfceabbff",
-        amount: 100,
+        amount: amount,
         currency: "NGN",
         orderId: orderId,
         description,
