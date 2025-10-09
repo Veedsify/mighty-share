@@ -25,6 +25,9 @@ COPY package.json bun.lockb* ./
 # Install dependencies with Bun (equivalent to npm install)
 RUN bun install
 
+# Generate Prisma client
+RUN bunx prisma generate
+
 # Copy the rest of the application code
 COPY . .
 
