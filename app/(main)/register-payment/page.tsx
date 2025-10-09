@@ -224,11 +224,11 @@ export default function RegisterPaymentPage() {
       }
     });
   };
-  if (!user && !loading) {
-    return router.push("/login");
-  }
   if (!user) {
     return null;
+  }
+  if (!user && !loading) {
+    return router.push("/login");
   }
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
