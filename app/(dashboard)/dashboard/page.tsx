@@ -328,6 +328,8 @@ export default function DashboardPage() {
         isOpen={showTopUp}
         onClose={() => setShowTopUp(false)}
         onSuccess={handleTopUpSuccess}
+        userPlan={user?.plan || "A"}
+        registrationPaid={user?.registrationPaid || false}
       />
     </div>
   );

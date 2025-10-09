@@ -3,33 +3,33 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import axios from "axios";
 
 export default function SignupPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const [fullname, setFullname] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [referralId, setReferralId] = useState("");
-  const [plan, setPlan] = useState("Option A");
+  const [formData, setFormData] = useState({
+    fullname: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+    referralId: "",
+    plan: "A",
+  });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Detect selected plan from URL (locks onto clicked membership option)
-  useEffect(() => {
-    const selectedPlan = searchParams.get("plan");
-    if (selectedPlan === "A") setPlan("Option A");
-    else if (selectedPlan === "B") setPlan("Option B");
-    else if (selectedPlan === "C") setPlan("Option C");
-  }, [searchParams]);
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (password !== confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
@@ -37,22 +37,24 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullname, phone, password, plan, referralId }),
+      const { data } = await axios.post("/api/auth/signup", {
+        fullname: formData.fullname,
+        phone: formData.phone,
+        password: formData.password,
+        plan: formData.plan,
+        referralId: formData.referralId,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Signup failed. Please try again.");
-      } else {
-        router.push("/register-payment");
+      if (data.error) {
+        setError(data.error);
+        setLoading(false);
+        return;
       }
+
+      router.push("/register-payment");
     } catch (err: any) {
       console.error("Signup error:", err);
-      setError("Something went wrong. Please try again.");
+      setError(err.response?.data?.error || "An error occurred during signup.");
     } finally {
       setLoading(false);
     }
@@ -85,61 +87,63 @@ export default function SignupPage() {
         <form onSubmit={handleSignup} className="space-y-4">
           <input
             type="text"
+            name="fullname"
             placeholder="Full Name"
-            value={fullname}
-            onChange={(e) => setFullname(e.target.value)}
+            value={formData.fullname}
+            onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md focus:ring-[#00C4B4] focus:border-[#00C4B4]"
             required
           />
 
           <input
             type="text"
+            name="phone"
             placeholder="Phone Number"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            value={formData.phone}
+            onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md focus:ring-[#00C4B4] focus:border-[#00C4B4]"
             required
           />
 
           <input
             type="password"
+            name="password"
             placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={formData.password}
+            onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md focus:ring-[#00C4B4] focus:border-[#00C4B4]"
             required
           />
 
           <input
             type="password"
+            name="confirmPassword"
             placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            value={formData.confirmPassword}
+            onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md focus:ring-[#00C4B4] focus:border-[#00C4B4]"
             required
           />
 
           <input
             type="text"
+            name="referralId"
             placeholder="Referral ID (optional)"
-            value={referralId}
-            onChange={(e) => setReferralId(e.target.value)}
+            value={formData.referralId}
+            onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md focus:ring-[#00C4B4] focus:border-[#00C4B4]"
           />
 
           <select
-            value={plan}
-            onChange={(e) => setPlan(e.target.value)}
+            name="plan"
+            value={formData.plan}
+            onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md focus:ring-[#00C4B4] focus:border-[#00C4B4]"
             required
           >
-            <option value="Option A">
-              Option A (₦2,400 weekly × 30 weeks)
-            </option>
-            <option value="Option B">
-              Option B (₦10,000 monthly × 7 months)
-            </option>
-            <option value="Option C">Option C (One-time payment)</option>
+            <option value="A">Option A (₦2,400 weekly × 30 weeks)</option>
+            <option value="B">Option B (₦10,000 monthly × 7 months)</option>
+            <option value="C">Option C (One-time payment)</option>
           </select>
 
           <button

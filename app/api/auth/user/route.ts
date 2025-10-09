@@ -4,8 +4,18 @@ import prisma from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
   try {
-    // ✅ Read JWT token from cookie
-    const token = req.cookies.get("token")?.value;
+    // ✅ Read cookie directly
+    let token = req.cookies.get("token")?.value;
+
+    // Validate the token and proceed with your logic
+    if (!token) {
+      const authorizationHeader = req.headers.get("Authorization");
+      if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
+        return new NextResponse("Unauthorizeddddd", { status: 401 });
+      }
+      token = authorizationHeader.split(" ")[1];
+    }
+
     if (!token) {
       return NextResponse.json({ user: null }, { status: 401 });
     }

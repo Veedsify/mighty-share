@@ -7,14 +7,17 @@ const prisma = new PrismaClient();
 export async function GET(req: NextRequest) {
   try {
     // ✅ Read cookie directly
-    const authorizationHeader = req.headers.get("Authorization");
+    let token = req.cookies.get("token")?.value;
 
-    if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
-      return new NextResponse("Unauthorized", { status: 401 });
+    // Validate the token and proceed with your logic
+    if (!token) {
+      const authorizationHeader = req.headers.get("Authorization");
+      if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
+        return new NextResponse("Unauthorizeddddd", { status: 401 });
+      }
+      token = authorizationHeader.split(" ")[1];
     }
 
-    const token = authorizationHeader.split(" ")[1];
-    // Validate the token and proceed with your logic
     if (!token) {
       return NextResponse.json({ user: null }, { status: 401 });
     }

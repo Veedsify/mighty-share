@@ -21,10 +21,11 @@ model User {
   notifications    String[]  @default([])
   lastActivity     String?
 
-  accounts           Account[]
-  complaints         Complaint[]
-  settlementAccounts SettlementAccount[]
-  Payment            Payment[]
+  accounts            Account[]
+  complaints          Complaint[]
+  settlementAccounts  SettlementAccount[]
+  Payment             Payment[]
+  thriftSubscriptions ThriftSubscription[]
 }
 
 model Account {
@@ -131,7 +132,7 @@ model Message {
 model Payment {
   id                Int           @id @default(autoincrement())
   userId            Int
-  businessId        String       
+  businessId        String
   amount            Int
   currency          String
   orderId           String        @unique
@@ -150,4 +151,120 @@ enum PaymentStatus {
   PENDING
   SUCCESSFUL
   FAILED
+}
+
+model SettlementClearance {
+  id            Int       @id @default(autoincrement())
+  accountNumber String
+  accountName   String
+  amount        Int
+  bankName      String
+  dueDate       DateTime
+  status        String    @default("pending") // pending, processing, cleared
+  priority      String    @default("normal") // low, normal, high
+  notes         String?   @db.Text
+  clearedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status])
+  @@index([dueDate])
+}
+
+model PaidSettlementAccount {
+  id             Int      @id @default(autoincrement())
+  accountNumber  String
+  accountName    String
+  bankName       String
+  amount         Int
+  settlementDate DateTime
+  reference      String   @unique
+  paymentMethod  String?
+  notes          String?  @db.Text
+  createdAt      DateTime @default(now())
+
+  @@index([settlementDate])
+  @@index([reference])
+}
+
+model BulkWithdrawalRequest {
+  id              Int       @id @default(autoincrement())
+  requestId       String    @unique
+  accountNumbers  String[] // Array of account numbers
+  totalAmount     Int
+  status          String    @default("pending") // pending, approved, processing, completed, rejected
+  requestedBy     String
+  approvedBy      String?
+  approvedAt      DateTime?
+  completedAt     DateTime?
+  rejectedAt      DateTime?
+  rejectionReason String?   @db.Text
+  notes           String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model NextSettlementAccount {
+  id              Int      @id @default(autoincrement())
+  accountNumber   String
+  accountName     String
+  bankName        String
+  amount          Int
+  scheduledDate   DateTime
+  settlementCycle String // weekly, monthly, quarterly
+  priority        String   @default("normal")
+  status          String   @default("scheduled") // scheduled, processing, cancelled
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([scheduledDate])
+  @@index([status])
+}
+
+model ThriftPackage {
+  id               Int      @id @default(autoincrement())
+  name             String
+  price            Int
+  duration         Int // in weeks
+  profitPercentage Int
+  description      String   @db.Text
+  terms            String   @db.Text
+  isActive         Boolean  @default(true)
+  minContribution  Int?
+  maxContribution  Int?
+  features         String[] @default([])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  subscriptions ThriftSubscription[]
+
+  @@index([isActive])
+}
+
+model ThriftSubscription {
+  id             Int       @id @default(autoincrement())
+  userId         Int
+  packageId      Int
+  amountInvested Int
+  startDate      DateTime  @default(now())
+  endDate        DateTime
+  status         String    @default("active") // active, completed, cancelled
+  expectedReturn Int
+  actualReturn   Int?
+  completedAt    DateTime?
+  cancelledAt    DateTime?
+  notes          String?   @db.Text
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package ThriftPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([packageId])
+  @@index([status])
 }

@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-
-const PLAN_LIMITS = {
-  A: { min: 1, max: 100 },
-  B: { min: 1, max: 500 },
-  C: { min: 10, max: 1000 },
-};
+import PlanConfig from "@/config/plan";
 
 const formatAccountId = (timestamp: number) => `MS${timestamp}`;
 
@@ -24,14 +19,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     const currentCount = user.accounts.length;
-    const limits = PLAN_LIMITS[user.plan as "A" | "B" | "C"] || {
-      min: 1,
-      max: 1,
-    };
+    const planKey = user.plan as keyof typeof PlanConfig;
+    const accountLimit = PlanConfig[planKey]?.accountLimit || 1;
 
-    if (currentCount >= limits.max) {
+    if (currentCount >= accountLimit) {
       return NextResponse.json(
-        { error: `Account limit reached for plan ${user.plan}` },
+        {
+          error: `Account limit reached for plan ${user.plan}. Maximum: ${accountLimit}`,
+        },
         { status: 403 }
       );
     }

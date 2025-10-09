@@ -1,3 +1,4 @@
+import "@fontsource-variable/inter";
 import { redirect } from "next/navigation";
 import { DashboardProvider } from "../../components/DashboardProvider";
 import DashboardSidebar from "../../components/DashboardSidebar";
@@ -5,6 +6,13 @@ import DashboardHeader from "../../components/DashboardHeader";
 import "../globals.css";
 import axios from "axios";
 import { cookies } from "next/headers";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "MightyShare",
+  description: "MightyShare App powered by Next.js + Prisma + PostgreSQL",
+};
+
 async function getUser() {
   try {
     // Try to fetch from API

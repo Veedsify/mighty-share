@@ -5,6 +5,7 @@
 
 
 body {
+  font-family: 'Inter Variable', sans-serif;
   @apply min-h-screen flex flex-col;
 }
 main {

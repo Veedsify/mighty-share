@@ -1,0 +1,2 @@
+const REDIRECT_DELAY = 2000;
+export { REDIRECT_DELAY };

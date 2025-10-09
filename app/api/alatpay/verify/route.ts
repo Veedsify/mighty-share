@@ -6,16 +6,15 @@ import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
-    const { reference, orderId } = await req.json();
-
-    if (!reference && !orderId) {
+    let { transactionId, orderId } = await req.json();
+    if (!transactionId && !orderId) {
       return NextResponse.json(
-        { error: "Payment reference or orderId is required" },
+        { error: "Payment transactionId or orderId is required" },
         { status: 400 }
       );
     }
 
-    const paymentRef = reference || orderId;
+    const paymentRef = transactionId || orderId;
 
     // Get user from token
     const headers = req.headers.get("cookie");
@@ -35,7 +34,7 @@ export async function POST(req: Request) {
     // Find payment record
     const payment = await prisma.payment.findFirst({
       where: {
-        orderId: paymentRef,
+        orderId: orderId,
         userId: decoded.userId,
       },
     });
@@ -49,7 +48,7 @@ export async function POST(req: Request) {
 
     // Verify with AlatPay
     try {
-      const verifyUrl = `${process.env.ALATPAY_BASE_URL}/alatpaytransaction/api/v1/transactions/${paymentRef}`;
+      const verifyUrl = `https://apibox.alatpay.ng/bank-transfer/api/v1/bankTransfer/transactions/${transactionId}`;
 
       const res = await axios.get(verifyUrl, {
         headers: {
@@ -59,51 +58,44 @@ export async function POST(req: Request) {
         },
       });
 
-      const data = res.data;
+      const response = res.data;
 
-      if (data.status === "success" && data.data) {
-        const transaction = data.data;
+      if (
+        response.status &&
+        response.data.status == "completed" &&
+        response.data.amount >= payment.amount
+      ) {
+        const transaction = response.data;
 
-        // Check if payment was successful
-        if (
-          transaction.status === "Successful" ||
-          transaction.status === "SUCCESSFUL"
-        ) {
-          // Update payment status
-          await prisma.payment.update({
-            where: { id: payment.id },
-            data: {
-              status: "SUCCESSFUL",
-              customerMetadata: JSON.stringify({
-                ...JSON.parse(payment.customerMetadata || "{}"),
-                verifiedAt: new Date().toISOString(),
-                alatpayResponse: transaction,
-              }),
-            },
-          });
+        // Update payment status
+        await prisma.payment.update({
+          where: { id: payment.id },
+          data: {
+            status: "SUCCESSFUL",
+            customerMetadata: JSON.stringify({
+              ...transaction,
+              verifiedAt: new Date().toISOString(),
+            }),
+          },
+        });
 
-          // Mark user registration as paid
-          await prisma.user.update({
-            where: { id: decoded.userId },
-            data: { registrationPaid: true },
-          });
+        // Mark user registration as paid
+        await prisma.user.update({
+          where: { id: decoded.userId },
+          data: { registrationPaid: true },
+        });
 
-          return NextResponse.json({
-            success: true,
-            message: "Payment verified successfully",
-            amount: transaction.amount || payment.amount,
-            reference: paymentRef,
-            userId: payment.userId,
-          });
-        } else {
-          return NextResponse.json(
-            { error: "Payment was not successful", status: transaction.status },
-            { status: 400 }
-          );
-        }
+        return NextResponse.json({
+          success: true,
+          message: "Payment verified successfully",
+          amount: transaction.amount || payment.amount,
+          reference: paymentRef,
+          userId: payment.userId,
+          updatedAt: transaction.updatedAt,
+        });
       } else {
         return NextResponse.json(
-          { error: data.message || "Payment verification failed" },
+          { error: response.message || "Payment verification failed" },
           { status: 400 }
         );
       }
@@ -129,7 +121,6 @@ export async function POST(req: Request) {
       const statusCode = err.response?.status || 500;
       const errorMessage =
         err.response?.data?.message || err.message || "Verification failed";
-
       return NextResponse.json(
         { error: errorMessage, details: err.response?.data },
         { status: statusCode }

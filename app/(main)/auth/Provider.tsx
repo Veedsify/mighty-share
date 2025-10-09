@@ -1,11 +1,29 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import axios from "axios";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+
+interface Account {
+  balance: number;
+  accountNumber: string;
+  transactions?: any; // JSON field from Prisma
+  referrals?: any; // JSON field from Prisma
+}
 
 interface User {
-  id: number;
   fullname: string;
-  phone: string;
+  accountId?: string;
+  balance?: number;
+  accounts?: Account[];
+  plan: string;
+  registrationPaid: boolean;
+  [key: string]: any;
 }
 
 interface SessionContextType {
@@ -30,8 +48,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadSession = async () => {
       try {
-        const res = await fetch("/api/auth/me", { credentials: "include" });
-        const data = await res.json();
+        const res = await axios.get("/api/auth/me", {
+          withCredentials: true,
+        });
+        const data = res.data;
         setUser(data.user || null);
       } catch (err) {
         console.error("Session fetch failed:", err);
@@ -65,5 +85,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 }
 
 export function useSession() {
+  if (SessionContext === undefined) {
+    throw new Error("useSession must be used within a SessionProvider");
+  }
   return useContext(SessionContext);
 }

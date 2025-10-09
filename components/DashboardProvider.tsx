@@ -2,19 +2,32 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef, createContext, useContext } from "react";
+import { useAccountStore } from "@/lib/store/accountStore";
 
 interface Account {
+  id: number;
   balance: number;
   accountNumber: string;
-  transactions?: any; // JSON field from Prisma
-  referrals?: any; // JSON field from Prisma
+  totalContributions: number;
+  rewards: number;
+  totalDebt: number;
+  referralEarnings: number;
+  userId: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface User {
+  id: number;
   fullname: string;
+  phone: string;
+  plan: string;
+  referralId: string;
+  registrationPaid: boolean;
   accountId?: string;
   balance?: number;
   accounts?: Account[];
+  notifications?: string[];
   [key: string]: any;
 }
 
@@ -28,7 +41,7 @@ interface DashboardContextType {
   dropdownOpen: boolean;
   setDropdownOpen: (open: boolean) => void;
   dropdownRef: React.RefObject<HTMLDivElement>;
-  handleAccountSwitch: (accountId: string) => void;
+  handleAccountSwitch: (accountId: number) => void;
   handleLogout: () => void;
   loading: boolean;
   setLoading: (loading: boolean) => void;
@@ -62,10 +75,13 @@ export function DashboardProvider({
   const [activeAccount, setActiveAccount] = useState<Account | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [loading, setLoading] = useState(!initialUser); // Loading only if no initial user
+  const [loading, setLoading] = useState(!initialUser);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Initialize user when initialUser prop changes (e.g., on navigation)
+  // Get active account ID from Zustand store
+  const { activeAccountId, setActiveAccountId } = useAccountStore();
+
+  // Initialize user when initialUser prop changes
   useEffect(() => {
     if (initialUser) {
       setUser(initialUser);
@@ -73,7 +89,7 @@ export function DashboardProvider({
     }
   }, [initialUser]);
 
-  // ✅ Update accounts when user changes
+  // Update accounts when user changes
   useEffect(() => {
     if (!user) {
       setAccounts([]);
@@ -81,21 +97,24 @@ export function DashboardProvider({
       return;
     }
 
-    // ✅ Fallback accounts
     const accs =
       Array.isArray(user.accounts) && user.accounts.length > 0
         ? user.accounts
-        : [
-            {
-              accountNumber: "MS" + Date.now(),
-              balance: user.balance || 0,
-            },
-          ];
+        : [];
 
-    // ✅ Determine active account
     setAccounts(accs);
-    setActiveAccount(accs[0] || null);
-  }, [user]);
+
+    // Set active account based on Zustand store or default to first account
+    if (accs.length > 0) {
+      if (activeAccountId) {
+        const selectedAccount = accs.find((a) => a.id === activeAccountId);
+        setActiveAccount(selectedAccount || accs[0]);
+      } else {
+        setActiveAccount(accs[0]);
+        setActiveAccountId(accs[0].id);
+      }
+    }
+  }, [user, activeAccountId, setActiveAccountId]);
 
   // ✅ Close dropdown when clicking outside
   useEffect(() => {
@@ -111,19 +130,18 @@ export function DashboardProvider({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ✅ Handle account switching
-  const handleAccountSwitch = (accountNumber: string) => {
-    const sessions = JSON.parse(localStorage.getItem("mockSessions") || "{}");
-    sessions.current = { ...sessions.current, accountNumber };
-    localStorage.setItem("mockSessions", JSON.stringify(sessions));
-    const selected = accounts.find((a) => a.accountNumber === accountNumber);
-    setActiveAccount(selected || null);
-    setDropdownOpen(false);
-    window.location.reload();
+  // Handle account switching
+  const handleAccountSwitch = (accountId: number) => {
+    const selected = accounts.find((a) => a.id === accountId);
+    if (selected) {
+      setActiveAccountId(accountId);
+      setActiveAccount(selected);
+      setDropdownOpen(false);
+    }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("mockSessions");
+    useAccountStore.getState().clearActiveAccount();
     router.replace("/login");
   };
 

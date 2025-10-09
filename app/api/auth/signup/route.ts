@@ -16,6 +16,17 @@ export async function POST(req: Request) {
         ? referralId
         : `REF-${Date.now()}`;
 
+    const existingUser = await prisma.user.findUnique({
+      where: { phone },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "Sorry this account already exists" },
+        { status: 400 }
+      );
+    }
+
     const user = await prisma.user.create({
       data: {
         fullname,
@@ -41,7 +52,7 @@ export async function POST(req: Request) {
 
     // Set cookie
     const res = NextResponse.json({ user });
-    
+
     res.cookies.set({
       name: "token",
       value: token,

@@ -90,7 +90,7 @@ export async function POST(req: Request) {
       "https://apibox.alatpay.ng/bank-transfer/api/v1/bankTransfer/virtualAccount",
       {
         businessId: "27a4ed9c-e6db-490e-1495-08ddfceabbff",
-        amount: amount,
+        amount: 100,
         currency: "NGN",
         orderId: orderId,
         description,
@@ -113,15 +113,13 @@ export async function POST(req: Request) {
       }
     );
     const data = res.data;
-    if (res.status === 200 && data.status === "success") {
+    if (res.status === 200 && data.status) {
       return NextResponse.json({
-        alatPayData: data,
-        paymentUrl: data.data?.paymentUrl || data.data?.checkoutUrl || null,
-        reference: orderId,
+        ...data,
       });
     } else {
       return NextResponse.json(
-        { error: data.message || "ALATPay failed" },
+        { error: data.message || "Alatpay Failed To Initialize" },
         { status: 400 }
       );
     }
