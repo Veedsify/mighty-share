@@ -67,6 +67,19 @@ export async function POST(req: Request) {
       ) {
         const transaction = response.data;
 
+        await prisma.transaction.create({
+          data: {
+            amount: transaction.amount || payment.amount,
+            reference: payment.orderId || transaction.transactionId,
+            status: "SUCCESSFUL",
+            type: "CREDIT",
+            paymentMethod: "ALATPAY",
+            accountId: payment.userId,
+            platformTransactionReference: transaction.transactionId,
+            description: transaction.description || payment.description,
+          },
+        });
+
         // Update payment status
         await prisma.payment.update({
           where: { id: payment.id },
