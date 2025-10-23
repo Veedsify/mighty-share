@@ -371,8 +371,7 @@ export default function Home() {
               At <span className="text-[#FC0FC0]">Mighty Share</span> Charity
               Foundation, we believe that dignity begins with access and
               generosity can be mighty when shared. Founded with a mission to
-              uplift underserved communities, we provide thrift services and
-              food incentives that go beyond charity. Through our food support
+              uplift underserved communities, we provide food incentives that go beyond charity. Through our food support
               programs, families and individuals receive nutritious meals and
               pantry staples.
             </p>
@@ -460,7 +459,7 @@ export default function Home() {
             To become a member, pay a registration fee of ₦2,500 only.
           </p>
         </section>
-        {/* ===== Wallet & Thrift Features ===== */}
+        {/* ===== Features & Benefits ===== */}
         <section id="features" className="py-16 bg-[#F8FAFB]">
           <motion.h2
             initial={{ opacity: 0, y: 50 }}
@@ -469,10 +468,10 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className="text-3xl font-extrabold bg-gradient-to-r from-[#1A2B88] to-[#00DDEB] bg-clip-text text-transparent text-center mb-12"
           >
-            Wallet & Thrift Features
+            Features & Benefits
           </motion.h2>
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 px-6">
-            {/* Wallet Card */}
+            {/* Membership Card */}
             <motion.div
               className="bg-white/80 backdrop-blur-md shadow-md rounded-xl p-6 text-center hover:shadow-lg transition-colors hover:bg-gradient-to-br from-[#F8FAFB] to-[#00DDEB]"
               initial={{ opacity: 0, scale: 0.9 }}
@@ -484,15 +483,15 @@ export default function Home() {
                 <Wallet className="text-[#FF5733] w-8 h-8 mx-auto" />
               </div>
               <h3 className="text-xl font-extrabold text-[#1A2B88] mb-2">
-                Secure Wallet
+                Membership Card
               </h3>
               <p className="text-gray-600 mb-4">
-                Manage your balance, top-up via Wema ALATpay, and track
-                transactions securely.
+                Be a registered Member with a dedicated Portal.
+                .
               </p>
               <div className="bg-[#F8FAFB] p-4 rounded-lg">
                 <p className="font-semibold text-[#00C4B4]">
-                  Current Balance: ₦{walletData.balance.toFixed(2)}
+                  Current Status: {walletData.balance.toFixed(2)}
                 </p>
                 <button
                   onClick={handleTopUp}
@@ -518,8 +517,8 @@ export default function Home() {
                 Thrift Plans
               </h3>
               <p className="text-gray-600 mb-4">
-                Join group savings (Ajo-style) with automated contributions and
-                cashback rewards.
+                Join Member groups with
+                rewards.
               </p>
               <div className="bg-[#F8FAFB] p-4 rounded-lg">
                 <p className="font-semibold text-[#00C4B4]">
@@ -560,8 +559,8 @@ export default function Home() {
             </motion.div>
           </div>
           <p className="text-center mt-8 text-gray-600">
-            Integrated with Wema ALAT for seamless payments and transfers. Sign
-            up to access your personalized wallet and thrift dashboard.
+            Sign
+            up to access your personalized portal.
           </p>
         </section>
 
@@ -657,7 +656,7 @@ export default function Home() {
               >
                 <p className="mb-4">
                   "Mighty Share has transformed my family's financial stability.
-                  The thrift plans are easy, and the food incentives are a
+                  The food incentives are a
                   blessing!"
                 </p>
                 <p className="font-semibold text-[#191970]">
@@ -672,8 +671,8 @@ export default function Home() {
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <p className="mb-4">
-                  "Secure wallet and seamless integrations with Wema Bank make
-                  managing savings effortless. Highly recommend!"
+                  "
+                   Highly recommend!"
                 </p>
                 <p className="font-semibold text-[#191970]">
                   - Chinedu Okoro, Abuja
@@ -708,7 +707,7 @@ export default function Home() {
                 Yetunde Boluwatife
               </h3>
               <p className="text-white">
-                Consistent saver with Option C plan. Achieved ₦120,000 cashback
+                Consistent member with Option C plan. Achieved ₦120,000 cashback
                 and foodstuff rewards!
               </p>
             </motion.div>
@@ -992,3 +991,4 @@ export default function Home() {
     </div>
   );
 }
+
