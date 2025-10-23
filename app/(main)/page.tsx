@@ -373,7 +373,7 @@ export default function Home() {
               generosity can be mighty when shared. Founded with a mission to
               uplift underserved communities, we provide food incentives that go beyond charity. Through our food support
               programs, families and individuals receive nutritious meals and
-              pantry staples.
+              much needed essentials.
             </p>
           </motion.div>
         </section>
@@ -588,7 +588,7 @@ export default function Home() {
                 Financial Empowerment
               </h3>
               <p>
-                Earn cashback and build savings with our flexible thrift plans.
+                Earn cashback and build.
               </p>
             </motion.div>
             <motion.div
@@ -991,4 +991,5 @@ export default function Home() {
     </div>
   );
 }
+
 
