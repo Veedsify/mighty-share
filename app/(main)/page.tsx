@@ -310,8 +310,8 @@ export default function Home() {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="max-w-md text-lg mb-8"
               >
-                Empowering communities with thrift services, financial
-                stability, and food incentives.
+                Empowering communities with financial
+                stability and food incentives.
               </motion.p>
               <div className="flex gap-4 justify-center md:justify-start">
                 <motion.a
@@ -991,5 +991,6 @@ export default function Home() {
     </div>
   );
 }
+
 
 
