@@ -879,7 +879,7 @@ export default function Home() {
               <h3 className="text-lg font-bold text-[#FC0FC0]">Mighty Share</h3>
             </div>
             <p className="text-sm">
-              Empowering communities through thrift services and food
+              Empowering communities through food
               incentives.
             </p>
           </div>
@@ -991,6 +991,7 @@ export default function Home() {
     </div>
   );
 }
+
 
 
 
