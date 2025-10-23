@@ -487,7 +487,7 @@ export default function Home() {
               </h3>
               <p className="text-gray-600 mb-4">
                 Be a registered Member with a dedicated Portal.
-                .
+              
               </p>
               <div className="bg-[#F8FAFB] p-4 rounded-lg">
                 <p className="font-semibold text-[#00C4B4]">
@@ -497,7 +497,7 @@ export default function Home() {
                   onClick={handleTopUp}
                   className="mt-2 bg-gradient-to-r from-[#FC0FC0] to-[#FC0FC0] text-white px-4 py-2 rounded-md hover:from-[#00DDEB] hover:to-[#1A2B88] transition"
                 >
-                  Top Up
+                  Add Up
                 </button>
               </div>
             </motion.div>
@@ -514,7 +514,7 @@ export default function Home() {
                 <Calendar className="text-[#3498DB] w-8 h-8 mx-auto" />
               </div>
               <h3 className="text-xl font-extrabold text-[#1A2B88] mb-2">
-                Thrift Plans
+                Community Plans
               </h3>
               <p className="text-gray-600 mb-4">
                 Join Member groups with
@@ -545,7 +545,7 @@ export default function Home() {
                 Food Incentives
               </h3>
               <p className="text-gray-600 mb-4">
-                Earn foodstuff rewards based on your thrift contributions and
+                Earn foodstuff rewards based on your contributions and
                 milestones.
               </p>
               <div className="bg-[#F8FAFB] p-4 rounded-lg">
@@ -991,6 +991,7 @@ export default function Home() {
     </div>
   );
 }
+
 
 
 
