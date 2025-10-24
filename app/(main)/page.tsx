@@ -406,9 +406,7 @@ export default function Home() {
                 Option A (Weekly)
               </h3>
               <p>
-                Contribute <span className="font-semibold">₦2,400</span> weekly
-                for 30 weeks and get ₦120,000 cashback with ₦25,000 foodstuff.
-              Number of Accounts: Min 1 Max 100. <br/> Referral Mode: 3 Months.</p>
+               .</p>
             </motion.div>
 
             {/* Option B */}
@@ -427,10 +425,7 @@ export default function Home() {
                 Option B (Monthly)
               </h3>
               <p>
-                Contribute <span className="font-semibold">₦10,000</span>{" "}
-                monthly for 7 months and get ₦120,000 cashback with ₦30,000
-                foodstuff.
-              Number of Accounts: Min 1 Max 500. <br/> Referral Mode: 3 Months.</p>
+                </p>
             </motion.div>
 
             {/* Option C */}
@@ -449,9 +444,7 @@ export default function Home() {
                 Option C (Fast Track)
               </h3>
               <p>
-                Contribute <span className="font-semibold">₦70,000</span> once
-                and get ₦120,000 cashback in 6 months with ₦30,000 foodstuff.
-              Number of Accounts: Min 10 Max 1000. <br/> Referral Mode: 2 Months.</p>
+                </p>
             </motion.div>
           </div>
 
@@ -991,6 +984,7 @@ export default function Home() {
     </div>
   );
 }
+
 
 
 
